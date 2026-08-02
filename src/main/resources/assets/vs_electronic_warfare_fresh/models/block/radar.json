@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "vs_electronic_warfare_fresh:block/radar_texture"
+  }
+}

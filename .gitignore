@@ -1,0 +1,15 @@
+# Gradle and generated build output
+.gradle/
+build/
+
+# Forge runtime data
+run/
+
+# IDE metadata
+.idea/
+.vscode/
+*.iml
+
+# Local operating-system files
+.DS_Store
+Thumbs.db

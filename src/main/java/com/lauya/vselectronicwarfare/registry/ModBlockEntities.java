@@ -1,0 +1,23 @@
+package com.lauya.vselectronicwarfare.registry;
+
+import com.lauya.vselectronicwarfare.VSElectronicWarfare;
+import com.lauya.vselectronicwarfare.block.entity.RadarBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+
+public final class ModBlockEntities {
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
+        DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, VSElectronicWarfare.MOD_ID);
+
+    public static final RegistryObject<BlockEntityType<RadarBlockEntity>> RADAR = BLOCK_ENTITIES.register("radar",
+        () -> BlockEntityType.Builder.of(RadarBlockEntity::new, ModBlocks.RADAR.get()).build(null));
+
+    public static final RegistryObject<BlockEntityType<RomComputerBlockEntity>> ROM_COMPUTER = BLOCK_ENTITIES.register("rom_computer",
+        () -> BlockEntityType.Builder.of(RomComputerBlockEntity::new, ModBlocks.ROM_COMPUTER.get()).build(null));
+
+    private ModBlockEntities() {
+    }
+}

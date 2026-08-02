@@ -1,0 +1,12 @@
+{
+  "block.vs_electronic_warfare_fresh.radar": "Radar",
+  "block.vs_electronic_warfare_fresh.rom_computer": "ROM Computer",
+  "item.vs_electronic_warfare_fresh.rom_computer": "ROM Computer",
+  "gui.vs_electronic_warfare_fresh.rom_computer.title": "ROM Computer",
+  "gui.vs_electronic_warfare_fresh.rom_computer.pastebin": "Pastebin ID or URL",
+  "gui.vs_electronic_warfare_fresh.rom_computer.status": "Status: %s",
+  "gui.vs_electronic_warfare_fresh.rom_computer.save": "Save",
+  "gui.vs_electronic_warfare_fresh.rom_computer.start": "Start",
+  "gui.vs_electronic_warfare_fresh.rom_computer.shutdown": "Shutdown",
+  "itemGroup.vs_electronic_warfare_fresh": "VS: Electronic Warfare Fresh"
+}
