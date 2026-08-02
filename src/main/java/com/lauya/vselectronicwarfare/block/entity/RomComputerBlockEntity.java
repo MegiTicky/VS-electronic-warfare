@@ -200,8 +200,8 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     protected void loadClient(CompoundTag tag) {
         pastebinId = normalizedOrEmpty(tag.getString(NBT_PROGRAM));
         activationConsumed = false;
-        status = defaultStatus();
-        error = "";
+        status = tag.contains(NBT_STATUS) ? tag.getString(NBT_STATUS) : defaultStatus();
+        error = tag.getString(NBT_ERROR);
     }
 
     @Override

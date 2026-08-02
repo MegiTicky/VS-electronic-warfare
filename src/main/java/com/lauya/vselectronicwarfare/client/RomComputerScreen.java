@@ -51,6 +51,13 @@ public final class RomComputerScreen extends AbstractContainerScreen<RomComputer
     }
 
     @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5EDF5, false);
+        graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.pastebin"),
+            12, 24, 0xFFB8C7D9, false);
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
