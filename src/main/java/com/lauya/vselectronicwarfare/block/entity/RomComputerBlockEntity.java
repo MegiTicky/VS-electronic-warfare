@@ -31,8 +31,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A CC:Tweaked computer with a deliberately ephemeral ComputerCraft identity.
@@ -40,15 +40,17 @@ import java.util.regex.Pattern;
  * a normal computer's ID or filesystem.
  */
 public final class RomComputerBlockEntity extends ComputerBlockEntity {
-    private static final String NBT_PROGRAM = "RomProgram";
+    public static final int MAX_SCRIPT_BYTES = 16 * 1024;
+    private static final String NBT_SCRIPT = "RomScript";
+    private static final String LEGACY_NBT_PROGRAM = "RomProgram";
     private static final String NBT_STATUS = "RomStatus";
     private static final String NBT_ERROR = "RomError";
-    private static final String ITEM_PROGRAM = "RomProgram";
+    private static final String ITEM_SCRIPT = "RomScript";
+    private static final String LEGACY_ITEM_PROGRAM = "RomProgram";
     private static final String STATUS_FILE = ".vs_ew_rom_status";
-    private static final String PROGRAM_FILE = ".vs_ew_rom_program";
-    private static final Pattern PASTEBIN_ID = Pattern.compile("[A-Za-z0-9]{1,32}");
+    private static final String SCRIPT_FILE = ".vs_ew_rom_script";
 
-    private String pastebinId = "";
+    private String script = "";
     private boolean activationConsumed;
     private boolean previousPowered;
     private String status = "waiting for redstone";
@@ -85,29 +87,26 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         }
     }
 
-    public boolean setPastebinId(String value) {
-        String normalized = normalizePastebinId(value);
-        if (normalized == null) return false;
+    public boolean setScript(String value) {
+        String normalized = normalizeScript(value);
+        if (!isValidScript(normalized)) return false;
 
-        pastebinId = normalized;
+        script = normalized;
         error = "";
-        status = pastebinId.isEmpty() ? "waiting for configuration" : "waiting for redstone";
+        status = script.isBlank() ? "waiting for configuration" : "waiting for redstone";
         sync();
         return true;
     }
 
     public void startConfiguredProgram() {
-        if (pastebinId.isEmpty()) {
-            setFailure("No Pastebin ID is configured");
+        if (script.isBlank()) {
+            setFailure("No startup script is configured");
             return;
         }
 
+        // A fresh server computer gives every explicit start a clean memory filesystem.
+        if (getServerComputer() != null) unload();
         ServerComputer computer = createServerComputer();
-        if (computer.isOn()) {
-            status = "already running";
-            sync();
-            return;
-        }
 
         try {
             WritableMount mount = computer.createRootMount();
@@ -116,15 +115,17 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
                 return;
             }
 
-            if (mount.exists(STATUS_FILE)) mount.delete(STATUS_FILE);
-            if (mount.exists(PROGRAM_FILE)) mount.delete(PROGRAM_FILE);
-            writeFile(mount, "startup.lua", launcherFor(pastebinId));
-            writeFile(mount, STATUS_FILE, "downloading");
+            clearMount(mount);
+            writeFile(mount, "startup.lua", launcher());
+            writeFile(mount, SCRIPT_FILE, script);
+            writeFile(mount, STATUS_FILE, "ready");
 
-            observedStatus = "downloading";
+            observedStatus = "ready";
             error = "";
-            status = "downloading";
+            status = "starting";
+            activationConsumed = true;
             sync();
+            playStartBeep();
             computer.turnOn();
         } catch (IOException exception) {
             VSElectronicWarfare.LOGGER.warn("Unable to prepare ROM computer at {}", getBlockPos(), exception);
@@ -140,15 +141,15 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         sync();
     }
 
-    public void reportInvalidProgram() {
+    public void reportInvalidScript() {
         status = "error";
-        error = "Enter a Pastebin ID or pastebin.com URL";
+        error = "Startup script exceeds 16 KiB";
         playFailureBeep();
         sync();
     }
 
-    public String getPastebinId() {
-        return pastebinId;
+    public String getScript() {
+        return script;
     }
 
     public String getStatus() {
@@ -160,12 +161,17 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     }
 
     public void copyConfigurationToItem(ItemStack stack) {
-        if (!pastebinId.isEmpty()) stack.getOrCreateTag().putString(ITEM_PROGRAM, pastebinId);
+        if (!script.isBlank()) stack.getOrCreateTag().putString(ITEM_SCRIPT, script);
     }
 
     public void readConfigurationFromItem(ItemStack stack) {
         CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(ITEM_PROGRAM)) setPastebinId(tag.getString(ITEM_PROGRAM));
+        if (tag == null) return;
+        if (tag.contains(ITEM_SCRIPT)) {
+            setScript(tag.getString(ITEM_SCRIPT));
+        } else if (tag.contains(LEGACY_ITEM_PROGRAM)) {
+            setScript(migrateLegacyProgram(tag.getString(LEGACY_ITEM_PROGRAM)));
+        }
     }
 
     @Nullable
@@ -183,12 +189,12 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     public void saveAdditional(CompoundTag tag) {
         // Do not call the parent implementation: its ComputerId would be copied by schematics.
         // Runtime state deliberately stays transient, so every copied schematic is armed afresh.
-        tag.putString(NBT_PROGRAM, pastebinId);
+        tag.putString(NBT_SCRIPT, script);
     }
 
     @Override
     protected void loadServer(CompoundTag tag) {
-        pastebinId = normalizedOrEmpty(tag.getString(NBT_PROGRAM));
+        script = loadScript(tag);
         activationConsumed = false;
         status = defaultStatus();
         error = "";
@@ -198,7 +204,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
 
     @Override
     protected void loadClient(CompoundTag tag) {
-        pastebinId = normalizedOrEmpty(tag.getString(NBT_PROGRAM));
+        script = loadScript(tag);
         activationConsumed = false;
         status = tag.contains(NBT_STATUS) ? tag.getString(NBT_STATUS) : defaultStatus();
         error = tag.getString(NBT_ERROR);
@@ -207,7 +213,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = super.getUpdateTag();
-        tag.putString(NBT_PROGRAM, pastebinId);
+        tag.putString(NBT_SCRIPT, script);
         tag.putString(NBT_STATUS, status);
         tag.putString(NBT_ERROR, error);
         return tag;
@@ -224,12 +230,14 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
             if (newStatus.isBlank() || newStatus.equals(observedStatus)) return;
 
             observedStatus = newStatus;
-            if (newStatus.equals("started")) {
-                status = "running";
+            if (newStatus.startsWith("running:")) {
+                status = "running line " + newStatus.substring("running:".length());
                 error = "";
-                playStartBeep();
+            } else if (newStatus.equals("completed")) {
+                status = "completed";
+                error = "";
             } else if (newStatus.startsWith("error:")) {
-                setFailure(newStatus.substring("error:".length()));
+                setFailure(formatScriptError(newStatus));
                 return;
             } else {
                 status = newStatus;
@@ -266,7 +274,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     }
 
     private String defaultStatus() {
-        return pastebinId.isEmpty() ? "waiting for configuration" : "waiting for redstone";
+        return script.isBlank() ? "waiting for configuration" : "waiting for redstone";
     }
 
     private static void writeFile(WritableMount mount, String path, String content) throws IOException {
@@ -284,36 +292,62 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         return StandardCharsets.UTF_8.decode((ByteBuffer) buffer.flip()).toString().trim();
     }
 
-    private static String launcherFor(String id) {
+    private static void clearMount(WritableMount mount) throws IOException {
+        List<String> entries = new ArrayList<>();
+        mount.list("", entries);
+        for (String entry : entries) mount.delete(entry);
+    }
+
+    private static String launcher() {
         return "local function status(value)\n"
             + "  local file = fs.open('" + STATUS_FILE + "', 'w')\n"
             + "  if file then file.write(value) file.close() end\n"
             + "end\n"
-            + "status('downloading')\n"
-            + "local downloaded = shell.run('pastebin', 'get', '" + id + "', '" + PROGRAM_FILE + "')\n"
-            + "if not downloaded or not fs.exists('" + PROGRAM_FILE + "') then\n"
-            + "  status('error:Pastebin download failed. Check CC HTTP settings and the ID.')\n"
-            + "  return\n"
+            + "local script, open_error = fs.open('" + SCRIPT_FILE + "', 'r')\n"
+            + "if not script then status('error:0:Cannot open startup script') return end\n"
+            + "local line_number = 0\n"
+            + "while true do\n"
+            + "  local line = script.readLine()\n"
+            + "  if not line then break end\n"
+            + "  line_number = line_number + 1\n"
+            + "  local command = line:match('^%s*(.-)%s*$')\n"
+            + "  if command ~= '' and command:sub(1, 1) ~= '#' then\n"
+            + "    status('running:' .. line_number)\n"
+            + "    if not shell.run(command) then\n"
+            + "      status('error:' .. line_number .. ':' .. command:sub(1, 180))\n"
+            + "      script.close()\n"
+            + "      return\n"
+            + "    end\n"
+            + "  end\n"
             + "end\n"
-            + "status('started')\n"
-            + "shell.run('" + PROGRAM_FILE + "')\n";
+            + "script.close()\n"
+            + "status('completed')\n";
     }
 
-    @Nullable
-    public static String normalizePastebinId(String value) {
-        String normalized = value == null ? "" : value.trim();
-        if (normalized.isEmpty()) return "";
-        normalized = normalized.replace("https://", "").replace("http://", "");
-        if (normalized.toLowerCase(Locale.ROOT).startsWith("pastebin.com/")) {
-            normalized = normalized.substring("pastebin.com/".length());
-            if (normalized.startsWith("raw/")) normalized = normalized.substring("raw/".length());
-        }
-        return PASTEBIN_ID.matcher(normalized).matches() ? normalized : null;
+    private static boolean isValidScript(@Nullable String value) {
+        return value == null || value.getBytes(StandardCharsets.UTF_8).length <= MAX_SCRIPT_BYTES;
     }
 
-    private static String normalizedOrEmpty(String value) {
-        String normalized = normalizePastebinId(value);
-        return normalized == null ? "" : normalized;
+    private static String loadScript(CompoundTag tag) {
+        String loaded = tag.contains(NBT_SCRIPT)
+            ? tag.getString(NBT_SCRIPT)
+            : migrateLegacyProgram(tag.getString(LEGACY_NBT_PROGRAM));
+        String normalized = normalizeScript(loaded);
+        return isValidScript(normalized) ? normalized : "";
+    }
+
+    private static String normalizeScript(@Nullable String value) {
+        return value == null ? "" : value.replace("\r\n", "\n").replace('\r', '\n');
+    }
+
+    private static String migrateLegacyProgram(String programId) {
+        return programId == null || programId.isBlank() ? "" : "pastebin run " + programId.trim();
+    }
+
+    private static String formatScriptError(String statusValue) {
+        String[] parts = statusValue.split(":", 3);
+        if (parts.length < 3) return "Startup command failed";
+        return "Line " + parts[1] + " failed: " + parts[2];
     }
 
     private static final class RomServerComputer extends ServerComputer {

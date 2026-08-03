@@ -8,7 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record RomComputerConfigPacket(BlockPos blockPos, Action action, String pastebinId) {
+public record RomComputerConfigPacket(BlockPos blockPos, Action action, String script) {
     public enum Action {
         SAVE,
         START,
@@ -18,14 +18,14 @@ public record RomComputerConfigPacket(BlockPos blockPos, Action action, String p
     public static void encode(RomComputerConfigPacket packet, FriendlyByteBuf buffer) {
         buffer.writeBlockPos(packet.blockPos);
         buffer.writeEnum(packet.action);
-        buffer.writeUtf(packet.pastebinId, 128);
+        buffer.writeUtf(packet.script, RomComputerBlockEntity.MAX_SCRIPT_BYTES);
     }
 
     public static RomComputerConfigPacket decode(FriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         Action action = buffer.readEnum(Action.class);
-        String pastebinId = buffer.readUtf(128);
-        return new RomComputerConfigPacket(pos, action, pastebinId);
+        String script = buffer.readUtf(RomComputerBlockEntity.MAX_SCRIPT_BYTES);
+        return new RomComputerConfigPacket(pos, action, script);
     }
 
     public static void handle(RomComputerConfigPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -39,11 +39,11 @@ public record RomComputerConfigPacket(BlockPos blockPos, Action action, String p
 
             switch (packet.action) {
                 case SAVE -> {
-                    if (!computer.setPastebinId(packet.pastebinId)) computer.reportInvalidProgram();
+                    if (!computer.setScript(packet.script)) computer.reportInvalidScript();
                 }
                 case START -> {
-                    if (!computer.setPastebinId(packet.pastebinId)) {
-                        computer.reportInvalidProgram();
+                    if (!computer.setScript(packet.script)) {
+                        computer.reportInvalidScript();
                         return;
                     }
                     computer.startConfiguredProgram();

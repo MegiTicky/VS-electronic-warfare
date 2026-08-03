@@ -47,7 +47,7 @@ public final class RomComputerBlock extends ComputerBlock<RomComputerBlockEntity
             && level.getBlockEntity(pos) instanceof RomComputerBlockEntity romComputer) {
             NetworkHooks.openScreen(serverPlayer, romComputer, buffer -> {
                 buffer.writeBlockPos(pos);
-                buffer.writeUtf(romComputer.getPastebinId());
+                buffer.writeUtf(romComputer.getScript(), RomComputerBlockEntity.MAX_SCRIPT_BYTES);
                 buffer.writeUtf(romComputer.getStatus());
                 buffer.writeUtf(romComputer.getError());
             });

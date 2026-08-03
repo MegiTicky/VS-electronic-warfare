@@ -39,11 +39,11 @@ Verify the deployed file when needed:
 Get-FileHash 'C:\Users\lauya\curseforge\minecraft\Instances\JPCreate2.5\mods\vs_electronic_warfare_fresh-0.3.0.jar'
 ```
 
-The target instance must also contain CC:Tweaked, Valkyrien Skies, and VMod. The ROM computer is server-authoritative and should be tested in a dedicated or single-player Forge instance with CC HTTP enabled when downloading from Pastebin.
+The target instance must also contain CC:Tweaked, Valkyrien Skies, and VMod. The ROM computer is server-authoritative and should be tested in a dedicated or single-player Forge instance with CC HTTP enabled when its startup commands download remote modules.
 
 ## Runtime Checks
 
-1. Place a ROM Computer and set a Pastebin ID or URL in its configuration screen.
-2. Apply a redstone signal once. A successful download produces one beep and `running`; failure produces two beeps and an error message.
-3. Save and reload a schematic. The Pastebin configuration should remain, while each placed copy receives a fresh CC identity and filesystem.
+1. Place a ROM Computer and enter one CraftOS shell command per line in its Startup Commands screen, for example `pastebin get ID module` followed by `module`.
+2. Apply a redstone signal once. Startup produces one beep; command failure produces two beeps and reports the failed line. Successful scripts end as `completed`.
+3. Save and reload a schematic. The startup script should remain, while each placed copy receives a fresh CC identity and filesystem.
 4. Test a moving VS ship, world save/reload, CC HTTP disabled, and manual Start/Shutdown controls.

@@ -12,22 +12,22 @@ import org.jetbrains.annotations.Nullable;
 
 public final class RomComputerMenu extends AbstractContainerMenu {
     private final BlockPos blockPos;
-    private final String initialProgram;
+    private final String initialScript;
     private final String initialStatus;
     private final String initialError;
 
     public RomComputerMenu(int containerId, Inventory inventory, FriendlyByteBuf buffer) {
-        this(containerId, inventory, buffer.readBlockPos(), buffer.readUtf(32), buffer.readUtf(128), buffer.readUtf(256));
+        this(containerId, inventory, buffer.readBlockPos(), buffer.readUtf(RomComputerBlockEntity.MAX_SCRIPT_BYTES), buffer.readUtf(128), buffer.readUtf(256));
     }
 
     public RomComputerMenu(int containerId, Inventory inventory, BlockPos blockPos) {
         this(containerId, inventory, blockPos, "", "", "");
     }
 
-    private RomComputerMenu(int containerId, Inventory inventory, BlockPos blockPos, String initialProgram, String initialStatus, String initialError) {
+    private RomComputerMenu(int containerId, Inventory inventory, BlockPos blockPos, String initialScript, String initialStatus, String initialError) {
         super(ModMenus.ROM_COMPUTER.get(), containerId);
         this.blockPos = blockPos;
-        this.initialProgram = initialProgram;
+        this.initialScript = initialScript;
         this.initialStatus = initialStatus;
         this.initialError = initialError;
     }
@@ -36,8 +36,8 @@ public final class RomComputerMenu extends AbstractContainerMenu {
         return blockPos;
     }
 
-    public String getInitialProgram() {
-        return initialProgram;
+    public String getInitialScript() {
+        return initialScript;
     }
 
     public String getInitialStatus() {
