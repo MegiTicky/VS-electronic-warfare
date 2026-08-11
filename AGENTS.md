@@ -1,49 +1,46 @@
-# VS: Electronic Warfare Fresh
+# VS: Electronic Warfare
 
-## Project
+## Toolchain
 
-- Minecraft `1.20.1`
-- Forge `47.4.0`
-- CC:Tweaked `1.20.1-1.113.1`
-- Valkyrien Skies `2.3.0-beta.5`
-- Mod id: `vs_electronic_warfare_fresh`
-
-The ROM computer implementation depends on CC:Tweaked internal classes. Keep those references isolated and verify against the pinned CC version before changing the dependency.
+- Minecraft `1.20.1`, Forge `47.4.0`, Java `17`.
+- The displayed mod name is `VS: Electronic Warfare`; retain the existing mod ID `vs_electronic_warfare_fresh` for registry and save compatibility.
+- Required runtime mods are CC:Tweaked `1.113.1` and Valkyrien Skies `2.3.0-beta.5` or newer.
+- DH is optional at runtime; the build uses `compileOnly 'maven.modrinth:DistantHorizonsApi:5.1.0'`.
+- CC:Tweaked is also a `compileOnly` jar at the absolute path in `build.gradle`; update that path or provide the pinned jar before compiling elsewhere.
 
 ## Build
 
-Run from this directory:
+Run from the repository root (`vs_electronic_warfare_fresh_start`):
 
 ```powershell
 .\gradlew.bat build
 ```
 
-The reobfuscated jar is written to:
+There are currently no test sources, so `build` is the primary verification command. The reobfuscated jar is `build\libs\vs_electronic_warfare_fresh-0.3.0.jar`.
 
-```text
-build\libs\vs_electronic_warfare_fresh-0.3.0.jar
-```
+## Architecture
 
-## Deploy
+- `VSElectronicWarfare` registers blocks, networking, the server config, and the ComputerCraft peripheral provider.
+- `RadarScanner` is the server-authoritative entrypoint for all radar methods and owns the stable Lua result maps.
+- `RadarScanner` uses exact VS-aware `clipIncludeShips` LOS up to 256 blocks. Beyond that, it validates 128-block exact endpoint segments first and uses `DhCompat` only for the remaining central terrain segment on a `ServerLevel`.
+- Keep CC internal/API references isolated from unrelated code and verify against the pinned CC version before changing them.
+- Keep DH access optional: `DhCompat` must remain safe when the `distanthorizons` mod is absent, uninitialized, missing a matching server-level wrapper/cache, or returns an error; those cases must use exact server LOS.
+- The radar server ceiling is the Forge server config key `radar.maxRadarScanRadius`, default `2048.0`; Lua radii are finite, non-negative, and clamped to that value.
 
-Stop Minecraft before replacing a loaded mod jar. Deploy to the JPCreate2.5 instance with:
+## Runtime Checks
+
+- Test in a dedicated or single-player Forge instance containing CC:Tweaked, Valkyrien Skies, and VMod; DH may be omitted to verify exact-LOS fallback.
+- For ROM computers, enable CC HTTP when startup scripts download remote modules; trigger startup with one redstone signal and verify success ends in `completed` while failures report the line and use two beeps.
+- Test moving VS ships, save/reload, schematic copies, manual Start/Shutdown, and CC HTTP-disabled behavior before changing ROM persistence or networking.
+- For radar changes, verify short-range terrain/ship occlusion, long-range clear and ridge-blocked terrain, endpoint obstructions, intervening ships, radius clamping, and `getConfigInfo().max_radius`.
+
+## Deployment
+
+Stop Minecraft before replacing the loaded jar. The known JPCreate2.5 deployment target is:
 
 ```powershell
 Copy-Item -Force .\build\libs\vs_electronic_warfare_fresh-0.3.0.jar `
   'C:\Users\lauya\curseforge\minecraft\Instances\JPCreate2.5\mods\vs_electronic_warfare_fresh-0.3.0.jar'
 ```
 
-Verify the deployed file when needed:
-
-```powershell
-Get-FileHash 'C:\Users\lauya\curseforge\minecraft\Instances\JPCreate2.5\mods\vs_electronic_warfare_fresh-0.3.0.jar'
-```
-
-The target instance must also contain CC:Tweaked, Valkyrien Skies, and VMod. The ROM computer is server-authoritative and should be tested in a dedicated or single-player Forge instance with CC HTTP enabled when its startup commands download remote modules.
-
-## Runtime Checks
-
-1. Place a ROM Computer and enter one CraftOS shell command per line in its Startup Commands screen, for example `pastebin get ID module` followed by `module`.
-2. Apply a redstone signal once. Startup produces one beep; command failure produces two beeps and reports the failed line. Successful scripts end as `completed`.
-3. Save and reload a schematic. The startup script should remain, while each placed copy receives a fresh CC identity and filesystem.
-4. Test a moving VS ship, world save/reload, CC HTTP disabled, and manual Start/Shutdown controls.
+After deployment, compare SHA-256 hashes of the build output and target jar with `Get-FileHash`; the currently deployed build hashes to `ABA05EACDF0C33AFA5EB2F03BF73B5F4B7B9C950EC2C8B0895546AC806003245`.

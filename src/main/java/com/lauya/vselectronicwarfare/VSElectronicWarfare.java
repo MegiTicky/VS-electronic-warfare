@@ -2,6 +2,7 @@ package com.lauya.vselectronicwarfare;
 
 import com.lauya.vselectronicwarfare.integration.cc.RadarPeripheralProvider;
 import com.lauya.vselectronicwarfare.network.ModNetwork;
+import com.lauya.vselectronicwarfare.config.ServerConfig;
 import com.lauya.vselectronicwarfare.registry.ModBlockEntities;
 import com.lauya.vselectronicwarfare.registry.ModBlocks;
 import com.lauya.vselectronicwarfare.registry.ModCreativeTabs;
@@ -10,6 +11,8 @@ import com.lauya.vselectronicwarfare.registry.ModMenus;
 import com.mojang.logging.LogUtils;
 import dan200.computercraft.api.ForgeComputerCraftAPI;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -27,9 +30,10 @@ public final class VSElectronicWarfare {
         ModMenus.MENUS.register(modBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modBus);
         ModNetwork.register();
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         modBus.addListener(this::commonSetup);
 
-        LOGGER.info("Loading VS: Electronic Warfare Fresh radar");
+        LOGGER.info("Loading VS: Electronic Warfare radar");
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

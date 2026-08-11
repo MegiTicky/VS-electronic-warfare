@@ -2,6 +2,7 @@ package com.lauya.vselectronicwarfare.integration.cc;
 
 import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import com.lauya.vselectronicwarfare.block.entity.RadarBlockEntity;
+import com.lauya.vselectronicwarfare.config.ServerConfig;
 import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -24,7 +26,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public final class RadarScanner {
-    public static final double MAX_RADIUS = 512.0;
+    private static final double LOCAL_EXACT_LOS_RADIUS = 128.0;
 
     public enum ScanMode {
         ALL,
@@ -60,7 +62,7 @@ public final class RadarScanner {
 
     public static Map<String, Object> getConfigInfo() {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("max_radius", MAX_RADIUS);
+        map.put("max_radius", ServerConfig.maxRadarScanRadius());
         map.put("line_of_sight_required", true);
         map.put("line_of_sight_mode", "center_ray");
         map.put("ship_line_of_sight_uses_vs_clip_include_ships", true);
@@ -68,10 +70,11 @@ public final class RadarScanner {
     }
 
     private static double clampRadius(Optional<Double> requestedRadius) throws LuaException {
-        double radius = requestedRadius.orElse(MAX_RADIUS);
+        double ceiling = ServerConfig.maxRadarScanRadius();
+        double radius = requestedRadius.orElse(ceiling);
         if (!Double.isFinite(radius)) throw new LuaException("radius must be finite");
         if (radius < 0.0) throw new LuaException("radius must be non-negative");
-        return Math.min(radius, MAX_RADIUS);
+        return Math.min(radius, ceiling);
     }
 
     private static void scanEntities(Level level, Vec3 origin, AABB scanBox, double radius, ScanMode mode,
@@ -88,7 +91,7 @@ public final class RadarScanner {
             Vec3 target = entity.getBoundingBox().getCenter();
             double distance = origin.distanceTo(target);
             if (distance > radius) continue;
-            if (!ValkyrienSkiesReflection.hasLineOfSight(level, origin, target, null)) continue;
+            if (!hasLineOfSight(level, origin, target, null)) continue;
             results.add(entityToMap(entity, target, distance));
         }
     }
@@ -122,7 +125,7 @@ public final class RadarScanner {
             if (distance > radius) continue;
 
             Object targetShipId = ValkyrienSkiesReflection.shipId(ship);
-            if (!ValkyrienSkiesReflection.hasLineOfSight(level, origin, target, targetShipId)) continue;
+            if (!hasLineOfSight(level, origin, target, targetShipId)) continue;
             results.add(shipToMap(ship, target, distance));
         }
     }
@@ -156,6 +159,26 @@ public final class RadarScanner {
         map.put("y", y);
         map.put("z", z);
         return map;
+    }
+
+    private static boolean hasLineOfSight(Level level, Vec3 origin, Vec3 target, @Nullable Object skipShipId) {
+        double distance = origin.distanceTo(target);
+        double exactEndpointDistance = LOCAL_EXACT_LOS_RADIUS;
+        if (!(level instanceof ServerLevel serverLevel) || distance <= exactEndpointDistance * 2.0) {
+            return ValkyrienSkiesReflection.hasLineOfSight(level, origin, target, skipShipId);
+        }
+
+        Vec3 delta = target.subtract(origin);
+        Vec3 direction = delta.normalize();
+        Vec3 originEnd = origin.add(direction.scale(exactEndpointDistance));
+        Vec3 targetStart = target.subtract(direction.scale(exactEndpointDistance));
+        if (!ValkyrienSkiesReflection.hasLineOfSight(level, origin, originEnd, null)) return false;
+        if (!ValkyrienSkiesReflection.hasLineOfSight(level, targetStart, target, skipShipId)) return false;
+
+        Boolean clearTerrain = DhCompat.hasClearTerrainLine(serverLevel, originEnd, targetStart);
+        return clearTerrain == null
+            ? ValkyrienSkiesReflection.hasLineOfSight(level, origin, target, skipShipId)
+            : clearTerrain;
     }
 
     private static final class ValkyrienSkiesReflection {
