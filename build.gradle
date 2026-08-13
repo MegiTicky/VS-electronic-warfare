@@ -23,7 +23,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
-                vs_electronic_warfare_fresh {
+                vs_electronic_warfare {
                     source sourceSets.main
                 }
             }
@@ -35,7 +35,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
             args '--nogui'
             mods {
-                vs_electronic_warfare_fresh {
+                vs_electronic_warfare {
                     source sourceSets.main
                 }
             }
@@ -85,11 +85,11 @@ jar {
     manifest {
         attributes([
             'Specification-Title'     : mod_name,
-            'Specification-Vendor'    : 'lauya',
+            'Specification-Vendor'    : 'erika',
             'Specification-Version'   : '1',
             'Implementation-Title'    : project.name,
             'Implementation-Version'  : project.jar.archiveVersion,
-            'Implementation-Vendor'   : 'lauya',
+            'Implementation-Vendor'   : 'erika',
             'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }

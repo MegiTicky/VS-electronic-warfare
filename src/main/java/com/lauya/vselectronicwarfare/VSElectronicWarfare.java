@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 
 @Mod(VSElectronicWarfare.MOD_ID)
 public final class VSElectronicWarfare {
-    public static final String MOD_ID = "vs_electronic_warfare_fresh";
+    public static final String MOD_ID = "vs_electronic_warfare";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public VSElectronicWarfare() {

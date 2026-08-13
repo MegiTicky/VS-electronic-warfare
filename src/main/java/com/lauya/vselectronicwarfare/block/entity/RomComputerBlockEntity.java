@@ -104,7 +104,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
             return;
         }
 
-        // A fresh server computer gives every explicit start a clean memory filesystem.
+        // A newly started server computer gets a clean memory filesystem.
         if (getServerComputer() != null) unload();
         ServerComputer computer = createServerComputer();
 
@@ -182,13 +182,13 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.vs_electronic_warfare_fresh.rom_computer");
+        return Component.translatable("block.vs_electronic_warfare.rom_computer");
     }
 
     @Override
     public void saveAdditional(CompoundTag tag) {
         // Do not call the parent implementation: its ComputerId would be copied by schematics.
-        // Runtime state deliberately stays transient, so every copied schematic is armed afresh.
+        // Runtime state deliberately stays transient, so every copied schematic starts unarmed.
         tag.putString(NBT_SCRIPT, script);
     }
 
@@ -269,7 +269,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     private void sync() {
         setChanged();
         if (getLevel() != null) {
-            getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_INVISIBLE);
         }
     }
 

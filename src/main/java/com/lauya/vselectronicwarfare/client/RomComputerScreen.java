@@ -26,16 +26,16 @@ public final class RomComputerScreen extends AbstractContainerScreen<RomComputer
         titleLabelY = 10;
 
         scriptEditor = addRenderableWidget(new ScriptEditor(font, leftPos + 12, topPos + 39, 358, 180,
-            Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.startup_script")));
+            Component.translatable("gui.vs_electronic_warfare.rom_computer.startup_script")));
         scriptEditor.setValue(menu.getInitialScript());
 
-        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.save"),
+        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare.rom_computer.save"),
             button -> send(RomComputerConfigPacket.Action.SAVE))
             .bounds(leftPos + 12, topPos + 286, 110, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.start"),
+        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare.rom_computer.start"),
             button -> send(RomComputerConfigPacket.Action.START))
             .bounds(leftPos + 136, topPos + 286, 110, 20).build());
-        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.shutdown"),
+        addRenderableWidget(Button.builder(Component.translatable("gui.vs_electronic_warfare.rom_computer.shutdown"),
             button -> send(RomComputerConfigPacket.Action.SHUTDOWN))
             .bounds(leftPos + 260, topPos + 286, 110, 20).build());
     }
@@ -50,7 +50,7 @@ public final class RomComputerScreen extends AbstractContainerScreen<RomComputer
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5EDF5, false);
-        graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.startup_script"),
+        graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare.rom_computer.startup_script"),
             12, 24, 0xFFB8C7D9, false);
     }
 
@@ -62,12 +62,19 @@ public final class RomComputerScreen extends AbstractContainerScreen<RomComputer
         RomComputerBlockEntity computer = menu.getRomComputer(minecraft.player);
         String status = computer != null ? computer.getStatus() : menu.getInitialStatus();
         String error = computer != null ? computer.getError() : menu.getInitialError();
-        graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare_fresh.rom_computer.status", status),
+        graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare.rom_computer.status", status),
             leftPos + 12, topPos + 231, 0xFFB8C7D9, false);
         if (!error.isEmpty()) {
             graphics.drawWordWrap(font, Component.literal(error), leftPos + 12, topPos + 244, 350, 0xFFFF8A80);
         }
         renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Keep the configured inventory key available to the focused script editor.
+        if (scriptEditor.isFocused() && minecraft.options.keyInventory.matches(keyCode, scanCode)) return true;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void send(RomComputerConfigPacket.Action action) {

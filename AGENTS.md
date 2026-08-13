@@ -3,20 +3,20 @@
 ## Toolchain
 
 - Minecraft `1.20.1`, Forge `47.4.0`, Java `17`.
-- The displayed mod name is `VS: Electronic Warfare`; retain the existing mod ID `vs_electronic_warfare_fresh` for registry and save compatibility.
+- The displayed mod name is `VS: Electronic Warfare (Alpha)`; use the mod ID `vs_electronic_warfare` consistently for registry and resource identifiers.
 - Required runtime mods are CC:Tweaked `1.113.1` and Valkyrien Skies `2.3.0-beta.5` or newer.
 - DH is optional at runtime; the build uses `compileOnly 'maven.modrinth:DistantHorizonsApi:5.1.0'`.
 - CC:Tweaked is also a `compileOnly` jar at the absolute path in `build.gradle`; update that path or provide the pinned jar before compiling elsewhere.
 
 ## Build
 
-Run from the repository root (`vs_electronic_warfare_fresh_start`):
+Run from the repository root (`vs_electronic_warfare`):
 
 ```powershell
 .\gradlew.bat build
 ```
 
-There are currently no test sources, so `build` is the primary verification command. The reobfuscated jar is `build\libs\vs_electronic_warfare_fresh-0.3.0.jar`.
+There are currently no test sources, so `build` is the primary verification command. The reobfuscated jar is `build\libs\vs_electronic_warfare-0.3.1.jar`.
 
 ## Architecture
 
@@ -39,8 +39,10 @@ There are currently no test sources, so `build` is the primary verification comm
 Stop Minecraft before replacing the loaded jar. The known JPCreate2.5 deployment target is:
 
 ```powershell
-Copy-Item -Force .\build\libs\vs_electronic_warfare_fresh-0.3.0.jar `
-  'C:\Users\lauya\curseforge\minecraft\Instances\JPCreate2.5\mods\vs_electronic_warfare_fresh-0.3.0.jar'
+$source = '.\build\libs\vs_electronic_warfare-0.3.1.jar'
+$target = 'C:\Users\lauya\curseforge\minecraft\Instances\JPCreate2.5\mods\vs_electronic_warfare-0.3.1.jar'
+Copy-Item -Force $source $target
+Get-FileHash -Algorithm SHA256 $source, $target
 ```
 
-After deployment, compare SHA-256 hashes of the build output and target jar with `Get-FileHash`; the currently deployed build hashes to `ABA05EACDF0C33AFA5EB2F03BF73B5F4B7B9C950EC2C8B0895546AC806003245`.
+The source and target SHA-256 values must match before launching the instance.

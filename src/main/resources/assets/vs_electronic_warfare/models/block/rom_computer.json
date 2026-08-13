@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "vs_electronic_warfare:block/rom_computer_front",
+    "side": "vs_electronic_warfare:block/rom_computer_side",
+    "top": "vs_electronic_warfare:block/rom_computer_top"
+  }
+}

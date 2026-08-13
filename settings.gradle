@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'vs_electronic_warfare_fresh'
+rootProject.name = 'vs_electronic_warfare'

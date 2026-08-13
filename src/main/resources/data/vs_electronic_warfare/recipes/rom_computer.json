@@ -6,5 +6,5 @@
     "R": { "item": "minecraft:redstone" },
     "C": { "item": "computercraft:computer_normal" }
   },
-  "result": { "item": "vs_electronic_warfare_fresh:rom_computer" }
+  "result": { "item": "vs_electronic_warfare:rom_computer" }
 }

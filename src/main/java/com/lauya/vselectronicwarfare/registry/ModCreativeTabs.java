@@ -14,7 +14,7 @@ public final class ModCreativeTabs {
 
     public static final RegistryObject<CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("tab",
         () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.vs_electronic_warfare_fresh"))
+            .title(Component.translatable("itemGroup.vs_electronic_warfare"))
             .icon(() -> new ItemStack(ModItems.RADAR.get()))
             .displayItems((parameters, output) -> {
                 output.accept(ModItems.RADAR.get());

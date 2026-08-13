@@ -6,9 +6,9 @@ license = "MIT"
 modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
-authors = "lauya"
+authors = "erika"
 description = '''
-ComputerCraft radar peripheral for Valkyrien Skies ships with line-of-sight filtering.
+Alpha release: ComputerCraft radar peripheral for Valkyrien Skies ships with line-of-sight filtering.
 '''
 
 [[dependencies.${mod_id}]]
