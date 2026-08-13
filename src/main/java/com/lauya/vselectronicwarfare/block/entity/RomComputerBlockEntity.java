@@ -3,6 +3,9 @@ package com.lauya.vselectronicwarfare.block.entity;
 import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import com.lauya.vselectronicwarfare.block.RomComputerBlock;
 import com.lauya.vselectronicwarfare.menu.RomComputerMenu;
+import com.lauya.vselectronicwarfare.network.ModNetwork;
+import com.lauya.vselectronicwarfare.network.RomComputerTerminalInputPacket;
+import com.lauya.vselectronicwarfare.network.RomComputerTerminalPacket;
 import com.lauya.vselectronicwarfare.registry.ModBlockEntities;
 import com.lauya.vselectronicwarfare.registry.ModMenus;
 import dan200.computercraft.api.filesystem.Mount;
@@ -26,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -57,6 +61,7 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     private String error = "";
     private String observedStatus = "";
     private int statusPollTicks;
+    private int terminalSyncTicks;
 
     public RomComputerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ROM_COMPUTER.get(), pos, state, ComputerFamily.NORMAL);
@@ -84,6 +89,10 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         if (++statusPollTicks >= 10) {
             statusPollTicks = 0;
             pollLauncherStatus();
+        }
+        if (++terminalSyncTicks >= 2) {
+            terminalSyncTicks = 0;
+            syncTerminal();
         }
     }
 
@@ -158,6 +167,22 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
 
     public String getError() {
         return error;
+    }
+
+    public void handleTerminalInput(RomComputerTerminalInputPacket packet) {
+        ServerComputer computer = getServerComputer();
+        if (computer == null || !isTerminalInteractive(computer)) return;
+
+        switch (packet.action()) {
+            case CHAR -> computer.queueEvent("char", new Object[]{packet.text()});
+            case PASTE -> computer.queueEvent("paste", new Object[]{packet.text()});
+            case KEY_DOWN -> computer.keyDown(packet.key(), packet.repeat());
+            case KEY_UP -> computer.keyUp(packet.key());
+            case MOUSE_CLICK -> computer.mouseClick(packet.key(), packet.x(), packet.y());
+            case MOUSE_UP -> computer.mouseUp(packet.key(), packet.x(), packet.y());
+            case MOUSE_DRAG -> computer.mouseDrag(packet.key(), packet.x(), packet.y());
+            case MOUSE_SCROLL -> computer.mouseScroll(packet.key(), packet.x(), packet.y());
+        }
     }
 
     public void copyConfigurationToItem(ItemStack stack) {
@@ -271,6 +296,19 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         if (getLevel() != null) {
             getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_INVISIBLE);
         }
+    }
+
+    private void syncTerminal() {
+        ServerComputer computer = getServerComputer();
+        if (computer == null) return;
+
+        ModNetwork.CHANNEL.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(
+            getBlockPos().getX() + 0.5D, getBlockPos().getY() + 0.5D, getBlockPos().getZ() + 0.5D, 8.0D, getLevel().dimension()
+        )), new RomComputerTerminalPacket(getBlockPos(), isTerminalInteractive(computer), computer.getTerminalState()));
+    }
+
+    private boolean isTerminalInteractive(ServerComputer computer) {
+        return computer.isOn() && !status.equals("completed") && !status.equals("error") && !status.equals("stopped");
     }
 
     private String defaultStatus() {

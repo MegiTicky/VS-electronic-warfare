@@ -21,6 +21,10 @@ public final class ModNetwork {
         registered = true;
         CHANNEL.registerMessage(0, RomComputerConfigPacket.class, RomComputerConfigPacket::encode,
             RomComputerConfigPacket::decode, RomComputerConfigPacket::handle);
+        CHANNEL.registerMessage(1, RomComputerTerminalPacket.class, RomComputerTerminalPacket::encode,
+            RomComputerTerminalPacket::decode, RomComputerTerminalPacket::handle);
+        CHANNEL.registerMessage(2, RomComputerTerminalInputPacket.class, RomComputerTerminalInputPacket::encode,
+            RomComputerTerminalInputPacket::decode, RomComputerTerminalInputPacket::handle);
     }
 
     private ModNetwork() {

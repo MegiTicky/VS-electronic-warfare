@@ -8,5 +8,8 @@
   "gui.vs_electronic_warfare.rom_computer.save": "Save",
   "gui.vs_electronic_warfare.rom_computer.start": "Start",
   "gui.vs_electronic_warfare.rom_computer.shutdown": "Shutdown",
+  "gui.vs_electronic_warfare.rom_computer.configuration": "Configuration",
+  "gui.vs_electronic_warfare.rom_computer.terminal": "Terminal",
+  "gui.vs_electronic_warfare.rom_computer.terminal_read_only": "Terminal is read-only. Start the ROM computer to accept input.",
   "itemGroup.vs_electronic_warfare": "VS: Electronic Warfare"
 }
