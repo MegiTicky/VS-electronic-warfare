@@ -3,6 +3,7 @@ package com.lauya.vselectronicwarfare.registry;
 import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import com.lauya.vselectronicwarfare.block.RadarBlock;
 import com.lauya.vselectronicwarfare.block.RomComputerBlock;
+import com.lauya.vselectronicwarfare.block.RomCommandComputerBlock;
 import dan200.computercraft.shared.platform.RegistryEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -39,6 +40,23 @@ public final class ModBlocks {
                 @Override
                 public ResourceLocation id() {
                     return new ResourceLocation(VSElectronicWarfare.MOD_ID, "rom_computer");
+                }
+            }));
+
+    public static final RegistryObject<RomCommandComputerBlock> ROM_COMMAND_COMPUTER = BLOCKS.register("rom_command_computer",
+        () -> new RomCommandComputerBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL)
+            .strength(2.0f, 6.0f)
+            .sound(SoundType.METAL)
+            .requiresCorrectToolForDrops(), new RegistryEntry<>() {
+                @Override
+                public BlockEntityType<com.lauya.vselectronicwarfare.block.entity.RomCommandComputerBlockEntity> get() {
+                    return ModBlockEntities.ROM_COMMAND_COMPUTER.get();
+                }
+
+                @Override
+                public ResourceLocation id() {
+                    return new ResourceLocation(VSElectronicWarfare.MOD_ID, "rom_command_computer");
                 }
             }));
 

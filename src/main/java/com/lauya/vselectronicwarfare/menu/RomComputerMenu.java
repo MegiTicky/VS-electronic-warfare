@@ -55,8 +55,9 @@ public final class RomComputerMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
+        RomComputerBlockEntity computer = getRomComputer(player);
         return player.distanceToSqr(blockPos.getX() + 0.5D, blockPos.getY() + 0.5D, blockPos.getZ() + 0.5D) <= 64.0D
-            && getRomComputer(player) != null;
+            && computer != null && computer.canUse(player);
     }
 
     @Override

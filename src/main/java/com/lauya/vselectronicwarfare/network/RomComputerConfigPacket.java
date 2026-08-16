@@ -35,7 +35,8 @@ public record RomComputerConfigPacket(BlockPos blockPos, Action action, String s
             if (player == null || player.distanceToSqr(packet.blockPos.getX() + 0.5D, packet.blockPos.getY() + 0.5D, packet.blockPos.getZ() + 0.5D) > 64.0D) {
                 return;
             }
-            if (!(player.level().getBlockEntity(packet.blockPos) instanceof RomComputerBlockEntity computer)) return;
+            if (!(player.level().getBlockEntity(packet.blockPos) instanceof RomComputerBlockEntity computer)
+                || !computer.canUse(player)) return;
 
             switch (packet.action) {
                 case SAVE -> {

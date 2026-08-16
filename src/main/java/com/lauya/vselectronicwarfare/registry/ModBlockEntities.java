@@ -3,6 +3,7 @@ package com.lauya.vselectronicwarfare.registry;
 import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import com.lauya.vselectronicwarfare.block.entity.RadarBlockEntity;
 import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomCommandComputerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -17,6 +18,9 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<RomComputerBlockEntity>> ROM_COMPUTER = BLOCK_ENTITIES.register("rom_computer",
         () -> BlockEntityType.Builder.of(RomComputerBlockEntity::new, ModBlocks.ROM_COMPUTER.get()).build(null));
+
+    public static final RegistryObject<BlockEntityType<RomCommandComputerBlockEntity>> ROM_COMMAND_COMPUTER = BLOCK_ENTITIES.register("rom_command_computer",
+        () -> BlockEntityType.Builder.of(RomCommandComputerBlockEntity::new, ModBlocks.ROM_COMMAND_COMPUTER.get()).build(null));
 
     private ModBlockEntities() {
     }

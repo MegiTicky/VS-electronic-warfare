@@ -27,6 +27,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.network.PacketDistributor;
@@ -43,7 +44,7 @@ import java.util.List;
  * Only ROM configuration is saved, so copied block-entity NBT cannot duplicate
  * a normal computer's ID or filesystem.
  */
-public final class RomComputerBlockEntity extends ComputerBlockEntity {
+public class RomComputerBlockEntity extends ComputerBlockEntity {
     public static final int MAX_SCRIPT_BYTES = 16 * 1024;
     private static final String NBT_SCRIPT = "RomScript";
     private static final String LEGACY_NBT_PROGRAM = "RomProgram";
@@ -64,7 +65,12 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
     private int terminalSyncTicks;
 
     public RomComputerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ROM_COMPUTER.get(), pos, state, ComputerFamily.NORMAL);
+        this(ModBlockEntities.ROM_COMPUTER.get(), pos, state, ComputerFamily.NORMAL);
+    }
+
+    protected RomComputerBlockEntity(BlockEntityType<? extends ComputerBlockEntity> type, BlockPos pos, BlockState state,
+                                     ComputerFamily family) {
+        super(type, pos, state, family);
     }
 
     @Override
@@ -169,6 +175,14 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
         return error;
     }
 
+    public boolean isOperatorOnly() {
+        return false;
+    }
+
+    public boolean canUse(Player player) {
+        return !isOperatorOnly() || player.hasPermissions(2);
+    }
+
     public void handleTerminalInput(RomComputerTerminalInputPacket packet) {
         ServerComputer computer = getServerComputer();
         if (computer == null || !isTerminalInteractive(computer)) return;
@@ -207,7 +221,11 @@ public final class RomComputerBlockEntity extends ComputerBlockEntity {
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.vs_electronic_warfare.rom_computer");
+        return Component.translatable(getDisplayNameKey());
+    }
+
+    protected String getDisplayNameKey() {
+        return "block.vs_electronic_warfare.rom_computer";
     }
 
     @Override
