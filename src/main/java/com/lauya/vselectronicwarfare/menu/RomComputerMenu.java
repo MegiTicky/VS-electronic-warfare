@@ -1,6 +1,6 @@
 package com.lauya.vselectronicwarfare.menu;
 
-import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomComputerAccess;
 import com.lauya.vselectronicwarfare.registry.ModMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -17,7 +17,7 @@ public final class RomComputerMenu extends AbstractContainerMenu {
     private final String initialError;
 
     public RomComputerMenu(int containerId, Inventory inventory, FriendlyByteBuf buffer) {
-        this(containerId, inventory, buffer.readBlockPos(), buffer.readUtf(RomComputerBlockEntity.MAX_SCRIPT_BYTES), buffer.readUtf(128), buffer.readUtf(256));
+        this(containerId, inventory, buffer.readBlockPos(), buffer.readUtf(RomComputerAccess.MAX_SCRIPT_BYTES), buffer.readUtf(128), buffer.readUtf(256));
     }
 
     public RomComputerMenu(int containerId, Inventory inventory, BlockPos blockPos) {
@@ -49,13 +49,13 @@ public final class RomComputerMenu extends AbstractContainerMenu {
     }
 
     @Nullable
-    public RomComputerBlockEntity getRomComputer(Player player) {
-        return player.level().getBlockEntity(blockPos) instanceof RomComputerBlockEntity computer ? computer : null;
+    public RomComputerAccess getRomComputer(Player player) {
+        return player.level().getBlockEntity(blockPos) instanceof RomComputerAccess computer ? computer : null;
     }
 
     @Override
     public boolean stillValid(Player player) {
-        RomComputerBlockEntity computer = getRomComputer(player);
+        RomComputerAccess computer = getRomComputer(player);
         return player.distanceToSqr(blockPos.getX() + 0.5D, blockPos.getY() + 0.5D, blockPos.getZ() + 0.5D) <= 64.0D
             && computer != null && computer.canUse(player);
     }

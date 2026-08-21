@@ -44,8 +44,8 @@ import java.util.List;
  * Only ROM configuration is saved, so copied block-entity NBT cannot duplicate
  * a normal computer's ID or filesystem.
  */
-public class RomComputerBlockEntity extends ComputerBlockEntity {
-    public static final int MAX_SCRIPT_BYTES = 16 * 1024;
+public class RomComputerBlockEntity extends ComputerBlockEntity implements RomComputerAccess {
+    public static final int MAX_SCRIPT_BYTES = RomComputerAccess.MAX_SCRIPT_BYTES;
     private static final String NBT_SCRIPT = "RomScript";
     private static final String LEGACY_NBT_PROGRAM = "RomProgram";
     private static final String NBT_STATUS = "RomStatus";

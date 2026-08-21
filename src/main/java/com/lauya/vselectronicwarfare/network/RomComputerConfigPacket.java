@@ -1,6 +1,6 @@
 package com.lauya.vselectronicwarfare.network;
 
-import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomComputerAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,13 +18,13 @@ public record RomComputerConfigPacket(BlockPos blockPos, Action action, String s
     public static void encode(RomComputerConfigPacket packet, FriendlyByteBuf buffer) {
         buffer.writeBlockPos(packet.blockPos);
         buffer.writeEnum(packet.action);
-        buffer.writeUtf(packet.script, RomComputerBlockEntity.MAX_SCRIPT_BYTES);
+        buffer.writeUtf(packet.script, RomComputerAccess.MAX_SCRIPT_BYTES);
     }
 
     public static RomComputerConfigPacket decode(FriendlyByteBuf buffer) {
         BlockPos pos = buffer.readBlockPos();
         Action action = buffer.readEnum(Action.class);
-        String script = buffer.readUtf(RomComputerBlockEntity.MAX_SCRIPT_BYTES);
+        String script = buffer.readUtf(RomComputerAccess.MAX_SCRIPT_BYTES);
         return new RomComputerConfigPacket(pos, action, script);
     }
 
@@ -35,7 +35,7 @@ public record RomComputerConfigPacket(BlockPos blockPos, Action action, String s
             if (player == null || player.distanceToSqr(packet.blockPos.getX() + 0.5D, packet.blockPos.getY() + 0.5D, packet.blockPos.getZ() + 0.5D) > 64.0D) {
                 return;
             }
-            if (!(player.level().getBlockEntity(packet.blockPos) instanceof RomComputerBlockEntity computer)
+            if (!(player.level().getBlockEntity(packet.blockPos) instanceof RomComputerAccess computer)
                 || !computer.canUse(player)) return;
 
             switch (packet.action) {

@@ -1,6 +1,6 @@
 package com.lauya.vselectronicwarfare.client;
 
-import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomComputerAccess;
 import com.lauya.vselectronicwarfare.menu.RomComputerMenu;
 import com.lauya.vselectronicwarfare.network.ModNetwork;
 import com.lauya.vselectronicwarfare.network.RomComputerConfigPacket;
@@ -81,7 +81,7 @@ public final class RomComputerScreen extends AbstractContainerScreen<RomComputer
         super.render(graphics, mouseX, mouseY, partialTick);
 
         if (!terminalTab) {
-            RomComputerBlockEntity computer = menu.getRomComputer(minecraft.player);
+            RomComputerAccess computer = menu.getRomComputer(minecraft.player);
             String status = computer != null ? computer.getStatus() : menu.getInitialStatus();
             String error = computer != null ? computer.getError() : menu.getInitialError();
             graphics.drawString(font, Component.translatable("gui.vs_electronic_warfare.rom_computer.status", status),

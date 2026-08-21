@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["IRI", "RMR", "IRI"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "M": { "item": "computercraft:turtle_normal" }
+  },
+  "result": { "item": "vs_electronic_warfare:rom_turtle" }
+}

@@ -1,6 +1,6 @@
 package com.lauya.vselectronicwarfare.network;
 
-import com.lauya.vselectronicwarfare.block.entity.RomComputerBlockEntity;
+import com.lauya.vselectronicwarfare.block.entity.RomComputerAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,7 +44,7 @@ public record RomComputerTerminalInputPacket(BlockPos blockPos, Action action, i
             if (player == null || player.distanceToSqr(packet.blockPos.getX() + 0.5D, packet.blockPos.getY() + 0.5D, packet.blockPos.getZ() + 0.5D) > 64.0D) {
                 return;
             }
-            if (player.level().getBlockEntity(packet.blockPos) instanceof RomComputerBlockEntity computer && computer.canUse(player)) {
+            if (player.level().getBlockEntity(packet.blockPos) instanceof RomComputerAccess computer && computer.canUse(player)) {
                 computer.handleTerminalInput(packet);
             }
         });

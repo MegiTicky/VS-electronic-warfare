@@ -4,9 +4,11 @@ import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import com.lauya.vselectronicwarfare.block.RadarBlock;
 import com.lauya.vselectronicwarfare.block.RomComputerBlock;
 import com.lauya.vselectronicwarfare.block.RomCommandComputerBlock;
+import com.lauya.vselectronicwarfare.block.RomTurtleBlock;
 import dan200.computercraft.shared.platform.RegistryEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import dan200.computercraft.shared.turtle.blocks.TurtleBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -57,6 +59,42 @@ public final class ModBlocks {
                 @Override
                 public ResourceLocation id() {
                     return new ResourceLocation(VSElectronicWarfare.MOD_ID, "rom_command_computer");
+                }
+            }));
+
+    public static final RegistryObject<RomTurtleBlock> ROM_TURTLE = BLOCKS.register("rom_turtle",
+        () -> new RomTurtleBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL)
+            .strength(2.0f, 6.0f)
+            .sound(SoundType.METAL)
+            .requiresCorrectToolForDrops(), new RegistryEntry<>() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public BlockEntityType<TurtleBlockEntity> get() {
+                    return (BlockEntityType<TurtleBlockEntity>) (BlockEntityType<?>) ModBlockEntities.ROM_TURTLE.get();
+                }
+
+                @Override
+                public ResourceLocation id() {
+                    return new ResourceLocation(VSElectronicWarfare.MOD_ID, "rom_turtle");
+                }
+            }));
+
+    public static final RegistryObject<RomTurtleBlock> ROM_ADVANCED_TURTLE = BLOCKS.register("rom_advanced_turtle",
+        () -> new RomTurtleBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL)
+            .strength(2.0f, 6.0f)
+            .sound(SoundType.METAL)
+            .requiresCorrectToolForDrops(), new RegistryEntry<>() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public BlockEntityType<TurtleBlockEntity> get() {
+                    return (BlockEntityType<TurtleBlockEntity>) (BlockEntityType<?>) ModBlockEntities.ROM_ADVANCED_TURTLE.get();
+                }
+
+                @Override
+                public ResourceLocation id() {
+                    return new ResourceLocation(VSElectronicWarfare.MOD_ID, "rom_advanced_turtle");
                 }
             }));
 

@@ -3,6 +3,7 @@ package com.lauya.vselectronicwarfare.registry;
 import com.lauya.vselectronicwarfare.VSElectronicWarfare;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import com.lauya.vselectronicwarfare.item.RomTurtleItem;
 import dan200.computercraft.shared.computer.items.CommandComputerItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -20,6 +21,12 @@ public final class ModItems {
 
     public static final RegistryObject<Item> ROM_COMMAND_COMPUTER = ITEMS.register("rom_command_computer",
         () -> new CommandComputerItem(ModBlocks.ROM_COMMAND_COMPUTER.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> ROM_TURTLE = ITEMS.register("rom_turtle",
+        () -> new RomTurtleItem(ModBlocks.ROM_TURTLE.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> ROM_ADVANCED_TURTLE = ITEMS.register("rom_advanced_turtle",
+        () -> new RomTurtleItem(ModBlocks.ROM_ADVANCED_TURTLE.get(), new Item.Properties()));
 
     private ModItems() {
     }

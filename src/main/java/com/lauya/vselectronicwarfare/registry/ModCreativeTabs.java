@@ -19,6 +19,8 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 output.accept(ModItems.RADAR.get());
                 output.accept(ModItems.ROM_COMPUTER.get());
+                output.accept(ModItems.ROM_TURTLE.get());
+                output.accept(ModItems.ROM_ADVANCED_TURTLE.get());
             })
             .build());
 
